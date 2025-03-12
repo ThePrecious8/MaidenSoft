@@ -48,20 +48,93 @@ local function updateActionbar()
 
 end
 
+local function setTitle(title)
+    if (#title > 40) then
+        title = string.sub(title, 1, 18) .. "..." .. string.sub(title, #title-18, #title)
+    end
+    paintutils.drawLine(1,1, 50, 1, colors.blue)
+    writeColoredAt(term,  52/2 - #title/2, 1, title, colors.white, colors.blue)
+end
+
 local function setActionBar(text, type, displayTime)
     type = type or 0
     displayTime = displayTime or 20
     actionbar = { text = text, type = type, displayTime = displayTime }
 end
 
+local pageViewBounds = {
+    width = 21,
+    height = 25,
+    padding = 2,
+    margin = 1
+}
+local viewData = {
+    position = 0,
+    maxPosition = 0,
+    viewportHeight = 16,
+    viewportWidth = 21 + pageViewBounds.padding*2 - 1,
+    viewportPositionX = 13,
+    viewportPositionY = 2,
+}
+local function renderPages() 
+    for characterPositionY = 0, viewData.viewportHeight, 1 do
+        for characterPositionX = 0 , viewData.viewportWidth, 1 do
+            local screenPostionX = characterPositionX + viewData.viewportPositionX
+            local screenPostionY = characterPositionY + viewData.viewportPositionY
+
+            local verticalPosition = characterPositionY + viewData.position
+            local horizontalPosition = characterPositionX
+
+            local page = math.floor((verticalPosition + pageViewBounds.margin - pageViewBounds.padding) / (pageViewBounds.height + pageViewBounds.margin + 2*pageViewBounds.padding))
+            local row = verticalPosition - page * (pageViewBounds.height + pageViewBounds.margin + 2*pageViewBounds.padding) - pageViewBounds.padding - pageViewBounds.margin
+            local column = horizontalPosition - pageViewBounds.padding
+
+            page = page + 1
+
+            if (page <= #document.pages and row >= 0 and row < pageViewBounds.height and characterPositionX >= 0 and column >= 0 and column < pageViewBounds.width) then
+                -- Content
+                local character = " "
+                local characterRow = document.pages[page].text[row+1]
+                if characterRow ~= nil and #characterRow > column  then
+                    character = string.sub(characterRow, column+1, column+1)
+                end
+
+                local blit = "f"
+                local blitRow = document.pages[page].color[row+1]
+                if blitRow ~= nil and #blitRow > column then
+                    blit =  string.sub(blitRow, characterPositionX+1, characterPositionX+1)
+                end
+
+
+                local color = colors.fromBlit(blit)
+
+                writeColoredAt(term, screenPostionX, screenPostionY, character, color, colors.white)
+            elseif (row < 0 and row >= 0 - pageViewBounds.padding) or (row >= pageViewBounds.height and row < pageViewBounds.height + pageViewBounds.padding) then
+                -- Padding
+                writeColoredAt(term, screenPostionX, screenPostionY, " ", colors.red, colors.white)
+            elseif (row >= 0 and row < pageViewBounds.height) and ((column < 0) or (column >= pageViewBounds.width)) then
+                -- Padding
+                writeColoredAt(term, screenPostionX, screenPostionY, " ", colors.red, colors.white)
+            else
+                -- Margin
+                writeColoredAt(term, screenPostionX, screenPostionY, " ", colors.red, colors.lightGray)
+            end
+        end
+    end
+end
+
+
+local function calculateScrollHeight() 
+    viewData.maxPosition = (#document.pages) * (pageViewBounds.height + pageViewBounds.margin + 2*pageViewBounds.padding) - viewData.viewportHeight
+end
+
+-- Main
 if #tArgs >= 1 then
     filePath = tArgs[1]
 end
 
 -- Document
-if filePath == nil then
-    document = ETFCore.ETFDocument:new()
-else
+if filePath ~= nil then
     local function loadFile(path) 
         document = ETFFile.load(filePath)
         setActionBar("Successfully loaded file", 0, 20*5)
@@ -69,9 +142,11 @@ else
     local status, err = pcall(loadFile)
     if not status then
         document = ETFCore.ETFDocument:new()
-        setActionBar("Failed to load file", 2, 20 * 5)
+        setActionBar("Failed to load file: ".. err, 2, 20 * 5)
     end
 end
+
+document = document or ETFCore.ETFDocument:new()
 
 local function softExit()
     
@@ -85,7 +160,7 @@ end
 -- Static UI
 term.setBackgroundColor(colors.lightGray)
 term.clear()
-paintutils.drawLine(1,1, 51, 1, colors.blue)
+setTitle(document.title .. " - MdS Office Word")
 writeColoredAt(term, 51, 1, "X", colors.white, colors.red)
 
 local eventHandlers = {
@@ -93,7 +168,9 @@ local eventHandlers = {
         
     end,
     postTick = function ()
+        calculateScrollHeight()
         updateActionbar()
+        renderPages()
     end,
 
     ["mouse_click"] = function (a1, a2, a3, a4)
@@ -103,6 +180,15 @@ local eventHandlers = {
 
     ["terminate"] = function (a1, a2, a3, a4)
         softExit()
+    end,
+
+    ["mouse_scroll"] = function (direction, xPos, yPos, _)
+        if (direction == 0) then
+            viewData.position = math.max(viewData.position - 1,0)
+        elseif (direction == 1) then
+            viewData.position = math.min(viewData.position + 1, viewData.maxPosition)
+        end
+        setActionBar("Scroll: " .. viewData.position .. ", D: " .. direction)
     end
 }
 

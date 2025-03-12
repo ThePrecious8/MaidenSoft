@@ -26,8 +26,36 @@ function module.saveETFC(ETFDocument, path)
     file.writeLine(ETFDocument.name)
 end
 
+local function loadContentBlock(fileStream)
+    local content = {}
+
+    local lineCountRaw = fileStream.readLine()
+    if lineCountRaw == nil then return nil end
+    local lineCount = tonumber(lineCountRaw)
+
+    for i = 1, lineCount, 1 do
+        table.insert(content, fileStream.readLine())
+    end
+
+    return content
+end
+
 local function loadPagesETF(file)
-    
+
+    local pages = {}
+
+    repeat
+        local textContent = loadContentBlock(file)
+        if textContent ~= nil then
+            local page = ETFCore.ETFDocument.createBlankPage()
+            page.text = textContent
+            
+            table.insert(pages, page)
+        end
+
+    until textContent == nil
+
+    return pages
 end
     
 
