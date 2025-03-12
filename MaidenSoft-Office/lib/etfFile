@@ -1,0 +1,70 @@
+
+
+local ETFCore = require("lib.etfCore")
+
+local module = {}
+
+function module.saveETF(ETFDocument, path)
+    local file = fs.open(path, "w")
+
+    file.writeLine("ETF")
+    file.writeLine(ETFDocument.name)
+
+end
+
+function module.saveETFG(ETFDocument, path)
+    local file = fs.open(path, "w")
+
+    file.writeLine("ETFG")
+    file.writeLine(ETFDocument.name)
+end
+
+function module.saveETFC(ETFDocument, path)
+    local file = fs.open(path, "w")
+
+    file.writeLine("ETFC")
+    file.writeLine(ETFDocument.name)
+end
+
+local function loadPagesETF(file)
+    
+end
+    
+
+local function loadPagesETFG(file)
+    
+end
+
+local function loadPagesETFC(file)
+    
+end
+
+function module.load(path)
+    
+    local file = fs.open(path, "r")
+    local instance = ETFCore.ETFDocument:new()
+    local format = file.readLine()
+    instance.title = file.readLine()
+    local pageLoaderMethod = nil;
+
+    if (format:upper() == "ETF") then
+        pageLoaderMethod = loadPagesETF
+    elseif (format:upper() == "ETFG") then
+        pageLoaderMethod = loadPagesETFG
+    elseif (format:upper() == "ETFC") then
+        pageLoaderMethod = loadPagesETFC
+    else
+        file.close();
+        return nil
+    end
+
+    instance.pages = pageLoaderMethod(file)
+
+    file.close()
+
+    return instance
+
+end
+
+
+return module;

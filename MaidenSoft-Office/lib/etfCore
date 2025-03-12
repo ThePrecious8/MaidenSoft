@@ -1,0 +1,29 @@
+
+
+-- ETF uses 21 x 25 characters per page
+-- It have two spaces: character space, and color space (for ETFG and ETFC)
+
+-- Module Defination
+local module = {}
+
+-- Define a class
+module.ETFDocument = {}
+module.ETFDocument.__index = module.ETFDocument
+
+-- Constructor
+function module.ETFDocument:new()
+    local instance = setmetatable({}, module.ETFDocument)  -- Create a new instance
+    instance.title = "Untitled Document"
+    instance.pages = { module.ETFDocument.createBlankPage() }
+    return instance
+end
+
+function module.ETFDocument.createBlankPage()
+    return {
+        text = {},
+        color = {}
+    }
+end
+
+
+return module;
