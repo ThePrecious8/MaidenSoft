@@ -1,0 +1,8 @@
+
+local module = {}
+
+function module.fromBlit(x)
+    return bit.blshift(1, tonumber(x, 16))
+end
+
+return module

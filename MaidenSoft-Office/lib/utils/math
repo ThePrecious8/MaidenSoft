@@ -1,0 +1,16 @@
+
+local module = {}
+
+function module.round(x)
+    return math.floor(x + 0.5)
+end
+
+function module.lerp(a, b, t)
+    return t * (b - a) + a
+end
+
+function module.clamp(x, min, max)
+    return math.max(math.min(x, max), min)
+end
+
+return module

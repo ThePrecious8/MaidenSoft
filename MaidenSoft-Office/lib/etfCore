@@ -1,5 +1,7 @@
 
 
+local colorUtils = require("lib.utils.color")
+
 -- ETF uses 25 x 21 characters per page
 -- It have two spaces: character space, and color space (for ETFG and ETFC)
 
@@ -38,7 +40,7 @@ function module.ETFDocument:getCharacter(page, row, column)
         blit =  string.sub(blitRow, column, column)
     end
 
-    local color = bit.blshift(1, tonumber(blit, 16))
+    local color = colorUtils.fromBlit(blit)
 
     return character, color
 end

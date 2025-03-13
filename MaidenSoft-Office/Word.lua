@@ -14,6 +14,7 @@ end
 
 local ETFFile = require("lib.etfFile")
 local ETFCore = require("lib.etfCore")
+local mathUtils = require("lib.utils.math")
 
 local tArgs = {...}
 
@@ -111,9 +112,33 @@ local function renderPages()
     end
 end
 
-
+local scrollbar = {
+    length = 0,
+    maxLength = 17,
+    screenPositionX = 51,
+    screenPositionY = 2,
+    mouseStartY = nil,
+    initialScrollPosition = nil
+}
 local function calculateScrollHeight() 
     viewData.maxPosition = (#document.pages) * (pageViewBounds.height + pageViewBounds.margin + 2*pageViewBounds.padding) - viewData.viewportHeight
+
+    -- Rendering bar
+
+    paintutils.drawLine(scrollbar.screenPositionX, scrollbar.screenPositionY, scrollbar.screenPositionX, scrollbar.screenPositionY + scrollbar.maxLength - 1, colors.gray)
+
+    local barHeightRatio = viewData.viewportHeight/(viewData.maxPosition + viewData.viewportHeight)
+
+    if (barHeightRatio < 1) then
+        local barPostionRatio = viewData.position / (viewData.maxPosition)
+
+        local barHeight = mathUtils.round(barHeightRatio * scrollbar.maxLength)
+        local barOffset = mathUtils.round(barPostionRatio * (scrollbar.maxLength-barHeight-1))
+
+        paintutils.drawLine(scrollbar.screenPositionX, scrollbar.screenPositionY + barOffset, scrollbar.screenPositionX, scrollbar.screenPositionY + barOffset + barHeight, colors.white)
+    end
+    
+
 end
 
 -- Main
@@ -161,9 +186,23 @@ local eventHandlers = {
         renderPages()
     end,
 
-    ["mouse_click"] = function (a1, a2, a3, a4)
-        setActionBar("mouse_click: " .. a2 .. " " .. a3)
-        if (a2 == 51 and a3 == 1) then softExit() end
+    ["mouse_click"] = function (mouseButton, mouseX, mouseY, _)
+        setActionBar("mouse_click: " .. mouseX .. " " .. mouseY)
+        if (mouseX == 51 and mouseY == 1) then
+            softExit()
+        elseif (mouseX == scrollbar.screenPositionX and mouseY >= scrollbar.screenPositionY and mouseY < scrollbar.screenPositionY + scrollbar.maxLength) then
+            setActionBar("Scroll Selected")
+            scrollbar.initialScrollPosition = viewData.position
+            scrollbar.mouseStartY = mouseY - scrollbar.screenPositionY
+        end
+    end,
+
+    ["mouse_up"] = function (mouseButton, mouseX, mouseY, _)
+        if (scrollbar.mouseStartY ~= nil) then
+            setActionBar("Scroll Deselected")
+            scrollbar.mouseStartY = nil
+        end
+
     end,
 
     ["terminate"] = function (a1, a2, a3, a4)
@@ -171,12 +210,21 @@ local eventHandlers = {
     end,
 
     ["mouse_scroll"] = function (direction, xPos, yPos, _)
-        if (direction <= 0) then
-            viewData.position = math.max(viewData.position - 1,0)
-        elseif (direction == 1) then
-            viewData.position = math.min(viewData.position + 1, viewData.maxPosition)
-        end
+        viewData.position = mathUtils.clamp(viewData.position + ((direction <= 0) and -1 or 1) , 0, viewData.maxPosition)
         setActionBar("Scroll: " .. viewData.position .. ", D: " .. direction)
+    end,
+
+    ["mouse_drag"] = function (button, mouseX, mouseY, _)
+        
+        if (scrollbar.mouseStartY ~= nil) then
+            local mousePositionOffsetRatio = -(mouseY - scrollbar.screenPositionY - scrollbar.mouseStartY) / (scrollbar.maxLength - 1)
+    
+            viewData.position = mathUtils.clamp( scrollbar.initialScrollPosition - mathUtils.round(mousePositionOffsetRatio * (viewData.maxPosition + viewData.viewportHeight)), 0, viewData.maxPosition )
+
+            setActionBar("Scroll Drag Offset Ratio: " .. mousePositionOffsetRatio)
+            
+        end
+
     end
 }
 
