@@ -93,20 +93,8 @@ local function renderPages()
 
             if (page <= #document.pages and row >= 0 and row < pageViewBounds.height and characterPositionX >= 0 and column >= 0 and column < pageViewBounds.width) then
                 -- Content
-                local character = " "
-                local characterRow = document.pages[page].text[row+1]
-                if characterRow ~= nil and #characterRow > column  then
-                    character = string.sub(characterRow, column+1, column+1)
-                end
-
-                local blit = "f"
-                local blitRow = document.pages[page].color[row+1]
-                if blitRow ~= nil and #blitRow > column then
-                    blit =  string.sub(blitRow, characterPositionX+1, characterPositionX+1)
-                end
-
-
-                local color = colors.fromBlit(blit)
+                local character, color = document:getCharacter(page, row+1, column+1)
+                character = character or " "
 
                 writeColoredAt(term, screenPostionX, screenPostionY, character, color, colors.white)
             elseif (row < 0 and row >= 0 - pageViewBounds.padding) or (row >= pageViewBounds.height and row < pageViewBounds.height + pageViewBounds.padding) then
@@ -183,7 +171,7 @@ local eventHandlers = {
     end,
 
     ["mouse_scroll"] = function (direction, xPos, yPos, _)
-        if (direction == 0) then
+        if (direction <= 0) then
             viewData.position = math.max(viewData.position - 1,0)
         elseif (direction == 1) then
             viewData.position = math.min(viewData.position + 1, viewData.maxPosition)

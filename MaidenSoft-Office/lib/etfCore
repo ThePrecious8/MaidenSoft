@@ -18,6 +18,31 @@ function module.ETFDocument:new()
     return instance
 end
 
+function module.ETFDocument:getCharacter(page, row, column)
+
+    -- Invalid
+    if (page < 1 or page > #self.pages) then
+        return nil, nil
+    end
+
+    -- Main
+    local character = nil
+    local characterRow = self.pages[page].text[row]
+    if characterRow ~= nil and #characterRow >= column then
+        character = string.sub(characterRow, column, column)
+    end
+
+    local blit = "f"
+    local blitRow = self.pages[page].color[row]
+    if blitRow ~= nil and #blitRow > column then
+        blit =  string.sub(blitRow, column, column)
+    end
+
+    local color = bit.blshift(1, tonumber(blit, 16))
+
+    return character, color
+end
+
 function module.ETFDocument.createBlankPage()
     return {
         text = {},
