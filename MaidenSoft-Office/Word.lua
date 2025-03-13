@@ -1,10 +1,6 @@
 
 local version = "v0.0.0-piss"
 
--- .etf     Single Color
--- .etfg    Grayscale (Black, Dark Gray, Light Gray)
--- .etfc    16 Color
-
 local function writeColoredAt(terminal, xPosition, yPosition, text, textColor, backgroundColor)
     terminal.setCursorPos(xPosition, yPosition)
     terminal.setTextColor(textColor)
@@ -143,7 +139,7 @@ end
 
 -- Main
 if #tArgs >= 1 then
-    filePath = tArgs[1]
+    filePath = shell.resolve(tArgs[1])
 end
 
 -- Document

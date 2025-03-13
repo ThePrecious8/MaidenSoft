@@ -5,6 +5,10 @@ local colorUtils = require("lib.utils.color")
 -- ETF uses 25 x 21 characters per page
 -- It have two spaces: character space, and color space (for ETFG and ETFC)
 
+-- .etf     ETF     Single Color
+-- .etfg    ETF-3   Grayscale (Black, Dark Gray, Light Gray)
+-- .etfc    ETF-16  16 Color
+
 -- Module Defination
 local module = {}
 

@@ -15,14 +15,14 @@ end
 function module.saveETFG(ETFDocument, path)
     local file = fs.open(path, "w")
 
-    file.writeLine("ETFG")
+    file.writeLine("ETF-3")
     file.writeLine(ETFDocument.name)
 end
 
 function module.saveETFC(ETFDocument, path)
     local file = fs.open(path, "w")
 
-    file.writeLine("ETFC")
+    file.writeLine("ETF-16")
     file.writeLine(ETFDocument.name)
 end
 
@@ -60,11 +60,11 @@ end
     
 
 local function loadPagesETFG(file)
-    
+    error("ETF-3 not supported")
 end
 
 local function loadPagesETFC(file)
-    
+    error("ETF-16 not supported")
 end
 
 function module.load(path)
@@ -77,9 +77,9 @@ function module.load(path)
 
     if (format:upper() == "ETF") then
         pageLoaderMethod = loadPagesETF
-    elseif (format:upper() == "ETFG") then
+    elseif (format:upper() == "ETF-3") then
         pageLoaderMethod = loadPagesETFG
-    elseif (format:upper() == "ETFC") then
+    elseif (format:upper() == "ETF-16") then
         pageLoaderMethod = loadPagesETFC
     else
         file.close();
