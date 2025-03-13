@@ -63,8 +63,8 @@ local function setActionBar(text, type, displayTime)
 end
 
 local pageViewBounds = {
-    width = 21,
-    height = 25,
+    width = 25,
+    height = 21,
     padding = 2,
     margin = 1
 }
@@ -72,8 +72,8 @@ local viewData = {
     position = 0,
     maxPosition = 0,
     viewportHeight = 16,
-    viewportWidth = 21 + pageViewBounds.padding*2 - 1,
-    viewportPositionX = 13,
+    viewportWidth = 25 + pageViewBounds.padding*2 - 1,
+    viewportPositionX = 11,
     viewportPositionY = 2,
 }
 local function renderPages() 

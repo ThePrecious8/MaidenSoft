@@ -1,6 +1,6 @@
 
 
--- ETF uses 21 x 25 characters per page
+-- ETF uses 25 x 21 characters per page
 -- It have two spaces: character space, and color space (for ETFG and ETFC)
 
 -- Module Defination
