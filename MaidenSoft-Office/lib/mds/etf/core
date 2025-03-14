@@ -1,6 +1,6 @@
 
 
-local colorUtils = require("lib.utils.color")
+local colorUtils = require("lib.mds.utils.color")
 
 -- ETF uses 25 x 21 characters per page
 -- It have two spaces: character space, and color space (for ETFG and ETFC)

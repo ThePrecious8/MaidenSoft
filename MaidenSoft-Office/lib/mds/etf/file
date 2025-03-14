@@ -1,6 +1,6 @@
 
 
-local ETFCore = require("lib.etfCore")
+local ETFCore = require("lib.mds.etf.core")
 
 local module = {}
 

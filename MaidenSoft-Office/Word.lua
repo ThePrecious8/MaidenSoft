@@ -8,9 +8,9 @@ local function writeColoredAt(terminal, xPosition, yPosition, text, textColor, b
     terminal.write(text)
 end
 
-local ETFFile = require("lib.etfFile")
-local ETFCore = require("lib.etfCore")
-local mathUtils = require("lib.utils.math")
+local ETFFile = require("lib.mds.etf.file")
+local ETFCore = require("lib.mds.etf.core")
+local mathUtils = require("lib.mds.utils.math")
 
 local tArgs = {...}
 
@@ -41,7 +41,7 @@ local function updateActionbar()
     local backgroundColor = actionbarColors[actionbar.type]
     if (backgroundColor == nil) then backgroundColor = actionbarColors[1] end
 
-    writeColoredAt(term, 1, 19, actionbar.text, colors.white, backgroundColor)
+    writeColoredAt(term, 1, 19, actionbar.text .. string.rep(" ", math.max(0, 51 - #actionbar.text) ), colors.white, backgroundColor)
 
 end
 
@@ -55,6 +55,7 @@ end
 
 local function setActionBar(text, type, displayTime)
     type = type or 0
+    type = type + 1
     displayTime = displayTime or 20
     actionbar = { text = text, type = type, displayTime = displayTime }
 end
@@ -144,14 +145,20 @@ end
 
 -- Document
 if filePath ~= nil then
+
+    local pathAbbriviation = filePath
+    if (#pathAbbriviation > 20) then
+        pathAbbriviation = "..." .. string.sub(pathAbbriviation, #pathAbbriviation - 17, #pathAbbriviation)
+    end
+
     local function loadFile(path) 
         document = ETFFile.load(filePath)
-        setActionBar("Successfully loaded file", 0, 20*5)
+        setActionBar("Successfully loaded file: " .. pathAbbriviation, 0, 20*5)
     end
     local status, err = pcall(loadFile)
     if not status then
         document = ETFCore.ETFDocument:new()
-        setActionBar("Failed to load file: ".. err, 2, 20 * 5)
+        setActionBar("Failed to load file: ".. pathAbbriviation, 2, 20 * 5)
     end
 end
 
